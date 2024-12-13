@@ -153,7 +153,9 @@ function partTwo() {
       }
     }
 
+    console.time('price')
     console.log(regions.reduce((accumulator, region) => accumulator + region.price(), 0));
+    console.timeEnd('price');
   });
 }
 
