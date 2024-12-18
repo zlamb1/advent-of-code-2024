@@ -187,11 +187,6 @@ function partTwo() {
     while (!queue.isEmpty()) {
       const currentNode = queue.dequeue();
 
-      if (currentNode.pos[0] === 11 && currentNode.pos[1] === 1) {
-        console.log('dir', currentNode.dir);
-        console.log('score', currentNode.score);
-      }
-
       for (let dir = 0; dir < 4; dir++) {
         const dirVec = dirMap[dir], nextPos = [currentNode.pos[0] + dirVec[0], currentNode.pos[1] + dirVec[1]];
         if (!isValidNode(nextPos)) continue;

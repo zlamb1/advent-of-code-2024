@@ -30,19 +30,16 @@ export class MinPriorityQ {
     return element;
   }
 
-  decrease_priority(findFn) {
-    const index = this.array.findIndex(findFn);
-    if (index > -1) {
-      this.reheapUp(index);
-    }
-  }
-
   peek() {
     if (this.isEmpty()) {
       throw new Error('QueueUnderflow');
     }
 
     return this.array[0];
+  }
+
+  clear() {
+    this.array = [];
   }
 
   reheapUp(index) {
