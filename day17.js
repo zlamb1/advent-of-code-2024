@@ -158,27 +158,21 @@ function partTwo() {
       return outputs;
     }
 
-    function findOutput(currentNum = BigInt(0), digit = memory.length - 1) {
-      // 0o1_000_000_000_000_000
-      const num = BigInt(8) ** BigInt(digit);
-      for (let i = 1; i <= 8; i++) {
-        const numAtDigit = currentNum + num * BigInt(i);
-        const outputs = getOutputs(numAtDigit);
-        if (outputs[digit] === memory[digit] && outputs.length === memory.length) {
-          console.log(outputs[digit], memory[digit]);
-          if (digit === 0) {
-            console.log('here');
-            return numAtDigit;
-          }
-
-          const num = findOutput(numAtDigit, digit - 1);
-          if (num != null) {
-            return num;
-          }
+    let possible = [];
+    function findOutput(a = 0n, digit = 0) {
+      let minA = Number.MAX_VALUE;
+      for (let i = 0; i < 8; i++) {
+        const a2 = (a << 3n) | BigInt(i), outputs = getOutputs(a2);
+        if (outputs[0] === memory[memory.length - 1 - digit]) {
+          if (digit === memory.length - 1) return a2;
+          const num = findOutput(a2, digit + 1);
+          if (num != null && minA > num) minA = num;
         }
       }
+
+      return minA;
     }
-    //console.log(getOutputs(265106059265947n));
+
     console.log(findOutput());
   });
 }
