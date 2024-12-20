@@ -158,22 +158,28 @@ function partTwo() {
       return outputs;
     }
 
-    function findOutput(startBound, endBound, digit = memory.length - 1) {
-      const a = startBound + (endBound - startBound) / BigInt(2);
-      const outputs = getOutputs(a);
-      console.log(startBound, endBound);
-      if (outputs.length < memory.length) {
-        return findOutput(a, endBound);
-      }
-      console.log(outputs, a);
-      if (outputs[digit] > memory[digit]) {
-        return findOutput(startBound, a);
-      }
-      return outputs;
-    }
+    function findOutput(currentNum = BigInt(0), digit = memory.length - 1) {
+      // 0o1_000_000_000_000_000
+      const num = BigInt(8) ** BigInt(digit);
+      for (let i = 1; i <= 8; i++) {
+        const numAtDigit = currentNum + num * BigInt(i);
+        const outputs = getOutputs(numAtDigit);
+        if (outputs[digit] === memory[digit] && outputs.length === memory.length) {
+          console.log(outputs[digit], memory[digit]);
+          if (digit === 0) {
+            console.log('here');
+            return numAtDigit;
+          }
 
-    //console.log(findOutput(BigInt(0), BigInt(endBound)).length);
-    console.log(getOutputs(255184372088832n));
+          const num = findOutput(numAtDigit, digit - 1);
+          if (num != null) {
+            return num;
+          }
+        }
+      }
+    }
+    //console.log(getOutputs(265106059265947n));
+    console.log(findOutput());
   });
 }
 
