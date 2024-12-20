@@ -190,13 +190,15 @@ function partTwo() {
       for (let dir = 0; dir < 4; dir++) {
         const dirVec = dirMap[dir], nextPos = [currentNode.pos[0] + dirVec[0], currentNode.pos[1] + dirVec[1]];
         if (!isValidNode(nextPos)) continue;
-        const nextNode = nodes[getKey(nextPos, dir)];
-        const oldScore = nextNode.score, newScore = currentNode.score + (dir === currentNode.dir ? 1 : 1001);
 
-        if (newScore < oldScore) {
-          nextNode.routeToNode = [...currentNode.routeToNode, getKey(currentNode.pos, dir)];
-          nextNode.score = newScore;
-          queue.enqueue(nextNode);
+        for (let _dir = 0; _dir < 4; _dir++) {
+          const nextNode = nodes[getKey(nextPos, _dir)];
+          const oldScore = nextNode.score, newScore = currentNode.score + (dir === currentNode.dir ? (_dir === dir ? 1 : 1001) : (_dir === dir ? 1001 : 2001));
+          if (newScore < oldScore) {
+            nextNode.routeToNode = [...currentNode.routeToNode, getKey(currentNode.pos, dir)];
+            nextNode.score = newScore;
+            queue.enqueue(nextNode);
+          }
         }
       }
     }
@@ -205,29 +207,34 @@ function partTwo() {
     const endNode = endNodes[0];
     console.log(endNode);
 
-    const shortestPathNodes = endNode.routeToNode;
+    const shortestPathNodes = [...endNode.routeToNode, getKey(endNode)];
+    const visited = [...shortestPathNodes];
+    let uniqueNodes = {};
 
     while (shortestPathNodes.length > 0) {
       const key = shortestPathNodes.pop();
-      const parts = key.split('__'), r = Number(parts[0]), c = Number(parts[1]);
-      const node = nodes[key];
-      rows[r][c] = node.score.toString().substring(0, 1);
-      // console.log(node.score)
+      const currentNode = nodes[key];
+      rows[currentNode.pos[0]][currentNode.pos[1]] = dirSymbols[currentNode.dir];
+      uniqueNodes[currentNode.pos[0] + '__' + currentNode.pos[1]] = true;
 
-      /*for (let dir = 0; dir < 4; dir++) {
-        const dirVec = dirMap[dir], nextPos = [node.pos[0] + dirVec[0], node.pos[1] + dirVec[1]];
+      for (let dir = 0; dir < 4; dir++) {
+        const dirVec = dirMap[dir], nextPos = [currentNode.pos[0] + dirVec[0], currentNode.pos[1] + dirVec[1]];
         if (!isValidNode(nextPos)) continue;
-        const _key = getKey(nextPos), nextNode = nodes[_key];
-        if ((node.score === nextNode.score + 1) && !shortestPathNodes.includes(_key)) {
-          shortestPathNodes.push(_key);
+
+        for (let _dir = 0; _dir < 4; _dir++) {
+          const key = getKey(nextPos, _dir), node = nodes[key];
+          const edgeCost = _dir === currentNode.dir ? 1 : 1001;
+          if (node.score + edgeCost === currentNode.score && !visited.includes(getKey(node))) {
+            visited.push(key);
+            shortestPathNodes.push(key);
+          }
         }
-      }*/
+      }
     }
 
     displayMaze(rows);
     console.log();
-    console.log(endNode.score);
-    console.log()
+    console.log(Object.keys(uniqueNodes).length);
   });
 }
 
