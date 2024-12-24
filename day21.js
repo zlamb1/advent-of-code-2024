@@ -238,20 +238,46 @@ function partTwo() {
       return routes;
     }
 
-    function calculateDirectionalRoutes(route, currentChar = 'A', charIndex = 0, accumulator = [], routes = []) {
-      if (charIndex >= route.length) {
-        routes.push(accumulator);
-        return;
+    function processDirectionalChar(route, accumulator, curChar, nextChar) {
+      let endRoutes = [];
+      const {routes} = directionalButtonMatrix[curChar][nextChar];
+
+      for (const _route of routes) {
+        const _endRoutes = calculateDirectionalRoutes(route.substring(1), nextChar,
+          accumulator + _route.map(dir => directionalSymbols[dir]).join('') + 'A');
+        endRoutes = [...endRoutes, ..._endRoutes];
       }
 
-      const nextChar = route[charIndex++];
-      const {routes: _routes} = directionalButtonMatrix[currentChar][nextChar];
-      for (const _route of _routes) {
-        calculateDirectionalRoutes(route, nextChar, charIndex,
-          [...accumulator, ...(_route.map(dir => directionalSymbols[dir])), 'A'], routes);
+      if (!routes.length) {
+        const _endRoutes = calculateDirectionalRoutes(route.substring(1), nextChar, accumulator + 'A');
+        endRoutes = [...endRoutes, ..._endRoutes];
       }
 
-      return routes;
+      return endRoutes;
+    }
+
+    function calculateDirectionalRoutes(route, curChar = 'A', accumulator = '') {
+      if (!route.length) return [accumulator];
+
+      const indexOfA = route.indexOf('A');
+
+      if (indexOfA > -1) {
+        const section = route.substring(0, indexOfA + 1), leftOver = route.substring(indexOfA + 1);
+        let endRoutes = [];
+
+        for (let i = 0; i < section.length; i++) {
+          const nextChar = section[i], {routes} = directionalButtonMatrix[curChar][section[i]];
+          for (const _route of routes) {
+            const _endRoutes = calculateDirectionalRoutes(route.substring(1), nextChar,
+              accumulator + _route.map(dir => directionalSymbols[dir]).join('') + 'A');
+            endRoutes = [...endRoutes, ..._endRoutes];
+          }
+        }
+
+        return [...endRoutes, calculateDirectionalRoutes(leftOver, 'A', accumulator)];
+      } else {
+        return processDirectionalChar(route, accumulator, curChar, route.charAt(0));
+      }
     }
 
     let sum = 0;
@@ -268,24 +294,21 @@ function partTwo() {
         }
       }
 
-      const finalRoutes = [];
-      let minLength = Infinity;
-      const routes = calculateKeypadRoutes(code);
-      for (const route of routes) {
-        const _route = route.map(r => r.join('') + 'A').join('');
-        const routes = calculateDirectionalRoutes(_route).map(_route => _route.join(''));
-        for (const route of routes) {
-          const routes = calculateDirectionalRoutes(route);
-          for (const route of routes) {
-            const _route = route.join('');
-            if (_route.length <= minLength) {
-              if (_route.length < minLength) finalRoutes.length = 0;
-              finalRoutes.push(_route);
-              minLength = _route.length;
-            }
-          }
+      const initRoutes = calculateKeypadRoutes(code).map(route => route.map(r => r.join('') + 'A').join('')), numDirectionalRobots = 3;
+
+      function calculateRobotRoutes(routes, n = 1, minLength = Infinity) {
+        if (n <= 1) {
+          return (routes || []).reduce((accumulator, route) => Math.min(accumulator, route.length), Infinity)
         }
+
+        for (const route of routes) {
+          minLength = Math.min(calculateRobotRoutes(calculateDirectionalRoutes(route), n - 1), minLength);
+        }
+
+        return minLength;
       }
+
+      const minLength = calculateRobotRoutes(initRoutes, numDirectionalRobots);
 
       sum += num * minLength;
     }
